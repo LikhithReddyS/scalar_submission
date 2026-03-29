@@ -8,6 +8,10 @@ import os
 app = FastAPI(title="OpenEnv - Customer Support Ticket Resolution")
 env = CustomerSupportEnv()
 
+@app.get("/")
+def greet_json():
+    return {"Hello": "World!"}
+
 @app.post("/reset")
 def reset(task_name: str = "easy"):
     if task_name not in TASKS:
