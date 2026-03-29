@@ -1,0 +1,12 @@
+name: "customer-support-env"
+version: "1.0.0"
+description: "A Customer Support Ticket Management environment. Agents read user requests, search a knowledge base, and take actions (reply, assign, close) to resolve tickets."
+author: "AI Agent"
+entrypoint: "app:app"
+tasks:
+  - easy
+  - medium
+  - hard
+capabilities:
+  - text
+  - tool-use
