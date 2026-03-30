@@ -1,3 +1,12 @@
+---
+title: Scalar Output
+emoji: 😻
+colorFrom: blue
+colorTo: green
+sdk: docker
+pinned: false
+---
+
 # 🎧 OpenEnv: Customer Support Ticket Management
 
 [![OpenEnv Spec Status](https://img.shields.io/badge/OpenEnv-Compliant-brightgreen)](https://github.com/meta-pytorch/OpenEnv)
@@ -44,7 +53,7 @@ The agent must pass `{"action": { ... }}` payloads wrapping one of the following
 Fully compliant with the unified OpenEnv `/step`, `/reset`, and `/state` API specifications.
 - ✅ Uses `openenv-core` packaging.
 - ✅ Provides the automated `openenv.yaml` schema manifest.
-- ✅ Includes an automated testing OpenAI API baseline script (`baseline.py`).
+- ✅ Includes an automated testing OpenAI API baseline script (`inference.py`).
 - ✅ Exposes the necessary Hugging Face `/baseline`, `/grader`, and `/tasks` programmatic endpoints.
 - ✅ Features comprehensive exception handling within FastAPI endpoints.
 
@@ -64,7 +73,7 @@ python -m uvicorn app:app --port 7860
 *You can now visit `http://localhost:7860/docs` in your browser to manually test the visual API Swagger representation!*
 
 ### 2. Run the Automated Baseline Agent
-We have included a reproducible inference script (`baseline.py`) that utilizes OpenAI's `gpt-4o` acting as the standard evaluation agent navigating the environment step-by-step.
+We have included a reproducible inference script (`inference.py`) that utilizes OpenAI's `gpt-4o` acting as the standard evaluation agent navigating the environment step-by-step.
 ```bash
 # Export your API key in the terminal
 export OPENAI_API_KEY="sk-your-openai-api-key"
@@ -73,7 +82,7 @@ export OPENAI_API_KEY="sk-your-openai-api-key"
 # $env:OPENAI_API_KEY="sk-your-openai-api-key"
 
 # Run the agent against the live environment
-python baseline.py
+python inference.py
 ```
 *Note: Make sure the FastAPI server from step 1 is running before executing the baseline!*
 

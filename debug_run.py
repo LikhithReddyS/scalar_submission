@@ -12,7 +12,7 @@ print("Running baseline...")
 env_vars = os.environ.copy()
 env_vars["OPENAI_API_KEY"] = "dummy"
 
-baseline_proc = subprocess.Popen([sys.executable, "baseline.py"], env=env_vars, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+baseline_proc = subprocess.Popen([sys.executable, "inference.py"], env=env_vars, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
 stdout, stderr = baseline_proc.communicate()
 
