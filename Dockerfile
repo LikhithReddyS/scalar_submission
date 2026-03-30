@@ -3,14 +3,27 @@
 
 FROM python:3.10-slim
 
+# Set up a new user named "user" with user ID 1000
 RUN useradd -m -u 1000 user
+
+# Set home to the user's home directory and path
+ENV HOME=/home/user \
+    PATH=/home/user/.local/bin:$PATH
+
+# Set the working directory to the user's home directory
+WORKDIR $HOME/app
+
+# Copy the requirements file into the container
+COPY --chown=user:user ./requirements.txt $HOME/app/requirements.txt
+
+# Switch to the "user" user so installations happen in their ~/.local
 USER user
-ENV PATH="/home/user/.local/bin:$PATH"
 
-WORKDIR /app
+# Install dependencies with --user flag to avoid permission issues
+RUN pip install --user --no-cache-dir --upgrade -r $HOME/app/requirements.txt
 
-COPY --chown=user ./requirements.txt requirements.txt
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
+# Copy the rest of the application code into the container
+COPY --chown=user:user . $HOME/app
 
-COPY --chown=user . /app
+# Command to run the application
 CMD ["uvicorn", "openenv_server:app", "--host", "0.0.0.0", "--port", "7860"]
