@@ -1,6 +1,8 @@
 """ASGI server entrypoint required by OpenEnv multi-mode validator."""
 
-from openenv_server import app
+from openenv_server import app as openenv_app
+
+app = openenv_app
 
 
 def main() -> None:
