@@ -21,6 +21,9 @@ dependencies = [
   "google-genai"
 ]
 
+[project.scripts]
+server = "server.app:main"
+
 [tool.setuptools]
 py-modules = [
   "app",
@@ -32,3 +35,7 @@ py-modules = [
   "tasks",
   "verify_env"
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["server*"]
