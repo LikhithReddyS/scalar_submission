@@ -73,13 +73,21 @@ python -m uvicorn app:app --port 7860
 *You can now visit `http://localhost:7860/docs` in your browser to manually test the visual API Swagger representation!*
 
 ### 2. Run the Automated Baseline Agent
-We have included a reproducible inference script (`inference.py`) that utilizes OpenAI's `gpt-4o` acting as the standard evaluation agent navigating the environment step-by-step.
+We have included a reproducible inference script (`inference.py`) that utilizes the OpenAI client as the standard evaluation agent navigating the environment step-by-step.
 ```bash
-# Export your API key in the terminal
-export OPENAI_API_KEY="sk-your-openai-api-key"
+# Required environment variables for evaluation
+export API_BASE_URL="https://api.openai.com/v1"
+export MODEL_NAME="gpt-4o-mini"
+export HF_TOKEN="your-api-token"
+
+# Environment endpoint (optional, defaults to localhost)
+export ENV_API_URL="http://localhost:7860"
 
 # OR in Windows PowerShell:
-# $env:OPENAI_API_KEY="sk-your-openai-api-key"
+# $env:API_BASE_URL="https://api.openai.com/v1"
+# $env:MODEL_NAME="gpt-4o-mini"
+# $env:HF_TOKEN="your-api-token"
+# $env:ENV_API_URL="http://localhost:7860"
 
 # Run the agent against the live environment
 python inference.py
