@@ -1,0 +1,3 @@
+include server/app.py
+include server/__init__.py
+recursive-include server *.py
