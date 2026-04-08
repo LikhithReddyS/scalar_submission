@@ -1,1 +1,4 @@
-"""Compatibility server package for validators that treat scalar/ as project root."""
+"""Server package for the OpenEnv Customer Support environment."""
+from server.app import app
+
+__all__ = ["app"]

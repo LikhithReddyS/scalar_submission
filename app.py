@@ -1,7 +1,4 @@
-from fastapi import FastAPI
+"""Root-level app.py that re-exports the FastAPI app from server.app for compatibility."""
+from server.app import app
 
-app = FastAPI()
-
-@app.get("/")
-def greet_json():
-    return {"Hello": "World!"}
+__all__ = ["app"]

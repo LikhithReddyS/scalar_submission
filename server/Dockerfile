@@ -14,7 +14,7 @@ ENV HOME=/home/user \
 WORKDIR $HOME/app
 
 # Copy the requirements file into the container
-COPY --chown=user:user ./requirements.txt $HOME/app/requirements.txt
+COPY --chown=user:user ../requirements.txt $HOME/app/requirements.txt
 
 # Switch to the "user" user so installations happen in their ~/.local
 USER user
@@ -23,7 +23,7 @@ USER user
 RUN pip install --user --no-cache-dir --upgrade -r $HOME/app/requirements.txt
 
 # Copy the rest of the application code into the container
-COPY --chown=user:user . $HOME/app
+COPY --chown=user:user .. $HOME/app
 
-# Command to run the application - using server.app:app for multi-mode deployment
+# Command to run the application
 CMD ["uvicorn", "server.app:app", "--host", "0.0.0.0", "--port", "7860"]
