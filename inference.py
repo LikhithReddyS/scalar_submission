@@ -4,18 +4,16 @@ Evaluator-facing requirements this script satisfies:
 - File is named inference.py at repository root.
 - Uses OpenAI client for model calls.
 - Reads credentials/config from environment variables.
-- Produces reproducible scores across easy/medium/hard tasks.
+- Prints [START]/[STEP]/[END] structured output blocks to stdout.
 """
 
 from __future__ import annotations
 
 import json
 import os
+import sys
 import time
 from typing import Any, Dict, List
-
-import requests
-from openai import OpenAI
 
 
 ENV_API_URL = os.getenv("ENV_API_URL", "http://localhost:7860")
@@ -51,7 +49,19 @@ Policy:
 """.strip()
 
 
-def ensure_client() -> OpenAI:
+def log(msg: str) -> None:
+    """Print debug/diagnostic messages to stderr so they don't interfere with
+    the evaluator's stdout parsing."""
+    print(msg, file=sys.stderr, flush=True)
+
+
+def emit(msg: str) -> None:
+    """Print structured output to stdout for the evaluator."""
+    print(msg, flush=True)
+
+
+def ensure_client():
+    from openai import OpenAI
     if not HF_TOKEN:
         raise RuntimeError("HF_TOKEN environment variable is required")
     return OpenAI(api_key=HF_TOKEN, base_url=API_BASE_URL)
@@ -119,11 +129,12 @@ def choose_fallback_action(state_data: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def get_action_from_model(
-    client: OpenAI,
+    client,
     current_task: str,
     state_data: Dict[str, Any],
     history: List[str],
 ) -> Dict[str, Any]:
+    import requests as _req
     user_prompt = json.dumps(
         {
             "task": current_task,
@@ -147,14 +158,20 @@ def get_action_from_model(
     return safe_json_load(raw)
 
 
-def run_task(client: OpenAI, task_name: str) -> float:
-    print(f"\n--- Running task: {task_name} ---")
+def run_task(client, task_name: str) -> float:
+    import requests
+
+    # --- Structured output: [START] ---
+    emit(f"[START] task={task_name}")
+
+    log(f"--- Running task: {task_name} ---")
     reset_res = requests.post(f"{ENV_API_URL}/reset", params={"task_name": task_name}, timeout=30)
     reset_res.raise_for_status()
 
     done = False
     step_count = 0
     history: List[str] = []
+    last_reward = 0.0
 
     while not done and step_count < MAX_STEPS:
         state_res = requests.get(f"{ENV_API_URL}/state", timeout=30)
@@ -164,16 +181,18 @@ def run_task(client: OpenAI, task_name: str) -> float:
         try:
             action_payload = get_action_from_model(client, task_name, state_data, history)
         except Exception as exc:
-            print(f"Model call failed, using fallback action: {exc}")
+            log(f"Model call failed, using fallback action: {exc}")
             action_payload = choose_fallback_action(state_data)
 
         api_action = {"action": action_payload}
-        print(f"Step {step_count}: {json.dumps(api_action, ensure_ascii=True)}")
+        log(f"Step {step_count}: {json.dumps(api_action, ensure_ascii=True)}")
 
         step_res = requests.post(f"{ENV_API_URL}/step", json=api_action, timeout=30)
         if step_res.status_code >= 400:
-            print(f"Step failed ({step_res.status_code}), using fallback action next turn.")
+            log(f"Step failed ({step_res.status_code}), using fallback action next turn.")
             history.append(f"step {step_count}: invalid action")
+            # Emit [STEP] even on failure
+            emit(f"[STEP] step={step_count} reward=0.0")
             step_count += 1
             time.sleep(SLEEP_SECONDS)
             continue
@@ -181,23 +200,34 @@ def run_task(client: OpenAI, task_name: str) -> float:
         step_data = step_res.json()
         done = bool(step_data.get("done", False))
         reward_val = (step_data.get("reward") or {}).get("value", 0.0)
+        last_reward = reward_val
         history.append(f"step {step_count}: reward={reward_val}")
+
+        # --- Structured output: [STEP] ---
+        emit(f"[STEP] step={step_count} reward={reward_val}")
 
         step_count += 1
         time.sleep(SLEEP_SECONDS)
 
+    # Get final score from grader
     grader_res = requests.get(f"{ENV_API_URL}/grader", timeout=30)
     grader_res.raise_for_status()
     score = float(grader_res.json().get("score", 0.0))
-    print(f"Task {task_name} final score: {score:.2f}")
+
+    # --- Structured output: [END] ---
+    emit(f"[END] task={task_name} score={score} steps={step_count}")
+
+    log(f"Task {task_name} final score: {score:.2f}")
     return score
 
 
 def main() -> None:
-    print("Starting baseline inference")
-    print(f"Environment URL: {ENV_API_URL}")
-    print(f"Model: {MODEL_NAME}")
-    print(f"API base: {API_BASE_URL}")
+    import requests
+
+    log("Starting baseline inference")
+    log(f"Environment URL: {ENV_API_URL}")
+    log(f"Model: {MODEL_NAME}")
+    log(f"API base: {API_BASE_URL}")
 
     client = ensure_client()
 
@@ -208,10 +238,10 @@ def main() -> None:
         task_scores[task] = score
         total_score += score
 
-    print("\n=== Baseline Summary ===")
+    log("\n=== Baseline Summary ===")
     for task, score in task_scores.items():
-        print(f"{task}: {score:.2f}")
-    print(f"overall: {total_score:.2f}/3.00")
+        log(f"{task}: {score:.2f}")
+    log(f"overall: {total_score:.2f}/3.00")
 
 
 if __name__ == "__main__":
