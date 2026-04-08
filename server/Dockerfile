@@ -26,4 +26,4 @@ RUN pip install --user --no-cache-dir --upgrade -r $HOME/app/requirements.txt
 COPY --chown=user:user .. $HOME/app
 
 # Command to run the application
-CMD ["uvicorn", "server.app:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["python", "-m", "server.app"]
