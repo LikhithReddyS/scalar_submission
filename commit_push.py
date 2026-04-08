@@ -13,7 +13,7 @@ def run_cmd(cmd):
 def main():
     try:
         run_cmd(['git', 'add', '-A'])
-        run_cmd(['git', 'commit', '-m', 'Fix inference.py stdout structured blocks for evaluation'])
+        run_cmd(['git', 'commit', '-m', 'Fix score range to be strictly between 0 and 1 for HF validation'])
         run_cmd(['git', 'push'])
         print("Successfully committed and pushed.")
     except Exception as e:

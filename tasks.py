@@ -58,33 +58,33 @@ HARD_TASK_TICKETS = [
 def grader_easy(tickets):
     ticket = next((t for t in tickets if t['ticket_id'] == 'T001'), None)
     if ticket and ticket['assigned_to'] == "Billing":
-        return 1.0
-    return 0.0
+        return 0.99
+    return 0.01
 
 def grader_medium(tickets):
     ticket = next((t for t in tickets if t['ticket_id'] == 'T002'), None)
-    score = 0.0
+    score = 0.01
     if ticket:
         if any("3-5 business days" in reply for reply in ticket['replies']):
-            score += 0.5
+            score += 0.49
         if ticket['status'] == "closed":
-            score += 0.5
+            score += 0.49
     return score
 
 def grader_hard(tickets):
-    score = 0.0
+    score = 0.01
     t3 = next((t for t in tickets if t['ticket_id'] == 'T003'), None)
     t4 = next((t for t in tickets if t['ticket_id'] == 'T004'), None)
     t5 = next((t for t in tickets if t['ticket_id'] == 'T005'), None)
     
     if t3 and t3['assigned_to'] == "Technical Support":
-        score += 0.33
+        score += 0.32
     if t4 and t4['assigned_to'] == "Escalations":
         score += 0.33
     if t5 and any("Forgot Password" in reply for reply in t5['replies']) and t5['status'] == "closed":
-        score += 0.34
+        score += 0.33
     
-    return min(1.0, score)
+    return min(0.99, score)
 
 TASKS = {
     "easy": {
