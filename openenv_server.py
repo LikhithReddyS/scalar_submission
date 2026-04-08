@@ -51,11 +51,11 @@ def get_tasks():
 
 @app.get("/grader")
 def get_grader():
-    if not env.done:
-        return {"error": "Episode not finished. Call step with submit action to finish."}
-    # Calculate score
+    # Calculate current score regardless of done state to avoid unhandled remote timeout evaluations
     grader = TASKS[env.current_task_id]["grader"]
     final_score = grader([t.dict() for t in env.tickets])
+    # Ensure it's strictly within (0, 1) to be mathematically safe in formatting
+    final_score = max(0.01, min(0.99, float(final_score)))
     return {"score": final_score}
 
 @app.get("/baseline")

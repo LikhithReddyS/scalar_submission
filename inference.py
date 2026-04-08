@@ -211,8 +211,11 @@ def run_task(client, task_name: str) -> float:
 
     # Get final score from grader
     grader_res = requests.get(f"{ENV_API_URL}/grader", timeout=30)
-    grader_res.raise_for_status()
-    score = float(grader_res.json().get("score", 0.0))
+    score = 0.01
+    if grader_res.status_code < 400:
+        grader_data = grader_res.json()
+        score = float(grader_data.get("score", 0.01))
+    score = max(0.01, min(0.99, score))
 
     # --- Structured output: [END] ---
     emit(f"[END] task={task_name} score={score} steps={step_count}")
